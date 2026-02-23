@@ -1,239 +1,168 @@
-# Project-CHAIR-
-This project is about learning python server locally. For simulate internet locally 
-'''<div align="center">
+# 🪑 Project Chair
 
-# 🪑 Project CHAIR
+> A self-hosted local network hub with mini apps — built for privacy, built for your LAN.
 
-**Your Personal Local Server Ecosystem**
-
-[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-ff6b6b?style=for-the-badge)](LICENSE)
-
-*Minimalist. Local. Yours.*
-
-</div>
+![Status](https://img.shields.io/badge/status-active-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Python](https://img.shields.io/badge/python-3.8+-yellow)
 
 ---
 
-## ✨ What is CHAIR?
+## What is Project Chair?
 
-**CHAIR** = **C**haron **H**ub for **A**pps, **I**nterfaces & **R**esources
+**Project Chair** is a personal local-network suite that runs entirely on your machine — no internet required, no accounts, no tracking. It's a collection of self-hosted mini apps organized under a single hub called **Twilight Net**, designed with a clean, minimal UI inspired by Android 16's Material You design language.
 
-> A minimal, self-hosted local server that brings the power of modern web apps to your personal network. No cloud. No tracking. Just your data, your rules.
-
-Inspired by **Android 16's** clean, minimal UI philosophy — every pixel serves a purpose.
+Think of it as your own private internet, running at home.
 
 ---
 
-## 🌙 Twilight Net Ecosystem
+## Architecture
 
-<div align="center">
-
-| App | Icon | Description | Status |
-|-----|------|-------------|--------|
-| **Local Tube** | ▶️ | Personal video streaming platform | ✅ Ready |
-| **Local AI** | 🧠 | On-device LLM intelligence | 🚧 Coming Soon |
-| **Local Chat** | 💬 | Private messaging hub | 🚧 Coming Soon |
-| **Local Cloud** | ☁️ | Personal file storage | 🚧 Coming Soon |
-
-</div>
+```
+Project Chair
+└── Twilight Net (hub)          → localhost:8080
+    ├── 🎬 Local Tube           → localhost:3001
+    ├── 🤖 Local AI             → localhost:3002  [coming soon]
+    ├── 💬 Local Chat           → localhost:3003  [coming soon]
+    └── ☁️  Local Cloud          → localhost:3004  [coming soon]
+```
 
 ---
 
-## 🚀 Quick Start
+## Apps
 
+### 🌆 Twilight Net — The Hub
+The main dashboard for the entire suite. Displays all mini apps as cards, provides quick navigation, and has an admin panel to add or remove apps dynamically.
+
+**Features:**
+- Android 16-style dark AMOLED UI
+- App grid with icons and descriptions
+- Live clock and uptime display
+- Admin panel (PIN protected) to add/delete apps
+- Apps persist across sessions via localStorage
+
+---
+
+### 🎬 Local Tube
+A private YouTube-like video platform for your local network. Only admins can upload and manage content — everyone on the LAN can watch, like, and follow channels.
+
+**Features:**
+- Home feed (videos) and Shorts (vertical format)
+- Channels with follow system
+- Like system — per user, persistent
+- View count tracking
+- Thumbnail support for all content
+- Search across videos and shorts
+- Upload progress bar
+- Auto channel creation on first upload
+- Admin-only upload and delete (PIN protected)
+
+**Stack:** Python (Flask) + Vanilla HTML/CSS/JS + JSON flat-file DB
+
+---
+
+## Getting Started
+
+### Requirements
+- Python 3.8+
+- pip
+
+### Install dependencies
 ```bash
-# 1. Clone the project
-git clone https://github.com/yourusername/project-chair.git
-cd project-chair
-
-# 2. Install dependencies
 pip install flask
+```
 
-# 3. Create required folders
-mkdir -p static/videos static/shorts static/thumbnails
-
-# 4. Launch CHAIR
+### Run Twilight Net (hub)
+```bash
+cd twilight_net
 python server.py
+# → http://localhost:8080
 ```
 
-**Open your browser:**
-```
-http://localhost:5000
+### Run Local Tube
+```bash
+cd local_tube
+python server.py
+# → http://localhost:3001
 ```
 
 ---
 
-## 🎬 Local Tube — Your Personal YouTube
-
-<div align="center">
-
-![Local Tube Preview](https://via.placeholder.com/800x400/0f0f0f/ffffff?text=Local+Tube+Interface)
-
-</div>
-
-### Features
-
-🎥 **Video Streaming**
-- Upload & stream videos locally
-- Supports MP4, WebM, MOV, MKV
-- Auto thumbnail generation
-
-📱 **Shorts**
-- Vertical 9:16 format
-- Separate Shorts section
-- Quick scroll experience
-
-👍 **Social Features**
-- Like videos (IP-based tracking)
-- Follow channels
-- Subscriber counts
-- View analytics
-
-🔐 **Admin Controls**
-```
-Password: 1258
-```
-- Upload videos & shorts
-- Delete content
-- Manage channels
-
----
-
-## 🎨 Design Philosophy
-
-> *"Simplicity is the ultimate sophistication"* — Leonardo da Vinci (probably)
-
-### Android 16 Inspired
-- **Dark first**: #0f0f0f background
-- **Minimal chrome**: No unnecessary borders
-- **Fluid motion**: Smooth 0.3s transitions
-- **Purposeful color**: Every hue has meaning
-- **Touch friendly**: 40px+ touch targets
-
-### Color Palette
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--bg-primary` | `#0f0f0f` | Main background |
-| `--bg-secondary` | `#1f1f1f` | Cards, modals |
-| `--accent` | `#3ea6ff` | Primary actions |
-| `--danger` | `#ff4444` | Delete, warnings |
-| `--success` | `#4ecdc4` | Confirm, likes |
-
----
-
-## 📁 Project Structure
+## File Structure
 
 ```
 project-chair/
-├── 🐍 server.py              # Main Flask server
-├── 🎬 local_tube.py          # Video streaming app
-├── 📄 twilight_data.json     # App configuration
-├── 📄 local_tube_data.json   # Video database
-├── 📁 static/
-│   ├── 📁 videos/           # Uploaded videos
-│   ├── 📁 shorts/           # Short-form content
-│   └── 📁 thumbnails/       # Video thumbnails
-└── 📄 README.md             # This file
+│
+├── twilight_net/
+│   ├── server.py          # Python HTTP server (port 8080)
+│   └── index.html         # Hub UI — app grid, admin panel
+│
+└── local_tube/
+    ├── server.py          # Flask backend (port 3001)
+    ├── index.html         # Frontend UI
+    ├── db.json            # Auto-generated flat-file database
+    └── uploads/
+        ├── videos/        # Full-length video files
+        ├── shorts/        # Short-form video files
+        └── thumbnails/    # Thumbnail images
 ```
 
 ---
 
-## 🛠️ API Reference
+## Admin System
 
-### Local Tube Endpoints
+All apps in Project Chair share a unified admin PIN: **`1258`**
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/app/local-tube/` | Home page |
-| `GET` | `/app/local-tube/watch?v={id}` | Video player |
-| `POST` | `/app/local-tube/api/upload` | Upload video |
-| `POST` | `/app/local-tube/api/like/{id}` | Toggle like |
-| `POST` | `/app/local-tube/api/follow/{id}` | Toggle follow |
-| `DELETE` | `/app/local-tube/api/delete/{id}` | Delete video* |
+| App | Admin Access | Admin Can |
+|-----|-------------|-----------|
+| Twilight Net | PIN via admin button | Add / remove apps from grid |
+| Local Tube | PIN via profile icon | Upload videos, delete videos |
 
-*Requires admin password in body: `{"password": "1258"}`
+Admin sessions are client-side only — no tokens, no cookies. The PIN is verified per action on the server for destructive operations.
 
 ---
 
-## 🔒 Security Notes
+## Design Philosophy
 
-⚠️ **CHAIR is designed for local networks**
+Project Chair follows the **Android 16 / Material You** design language:
 
-- Default password: `1258` (change in production!)
-- IP-based user tracking (not authenticated)
-- No HTTPS in development mode
-- File uploads limited to 500MB
-
-**For production use:**
-- Change admin password
-- Enable Flask production mode
-- Add proper authentication
-- Use HTTPS/SSL certificates
+- AMOLED dark backgrounds (`#0a0a0c`)
+- Rounded cards with large corner radii
+- Surface layering for depth without shadows
+- Google Sans typography
+- Minimal chrome — content first
+- Bottom sheet modals instead of popups
+- Pill-shaped chips and action buttons
+- Subtle animations with `cubic-bezier` easing
 
 ---
 
-## 🎯 Roadmap
+## Roadmap
 
-- [x] **Local Tube** — Video streaming
-- [ ] **Local AI** — LLM integration (Ollama/Llama.cpp)
-- [ ] **Local Chat** — WebSocket messaging
-- [ ] **Local Cloud** — File manager with drag-drop
-- [ ] **Mobile app** — React Native wrapper
-- [ ] **Docker support** — One-command deploy
-
----
-
-## 🤝 Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-**Code style:** Minimal, clean, Android 16 aesthetic
+- [x] Twilight Net hub
+- [x] Local Tube (videos + shorts + likes + follows)
+- [ ] Local AI — on-device LLM interface
+- [ ] Local Chat — real-time LAN messaging (WebSocket)
+- [ ] Local Cloud — personal file storage and sharing
+- [ ] Unified admin dashboard across all apps
+- [ ] Dark/light theme toggle
+- [ ] Mobile PWA support
 
 ---
 
-## 📜 License
+## Privacy
 
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-## 🙏 Acknowledgments
-
-- Design inspired by **Android 16** and **YouTube's** minimal interface
-- Built with **Flask** — because simplicity matters
-- Icons by **Emoji** — universal and lightweight
+Project Chair is 100% local. Nothing leaves your machine or LAN:
+- No telemetry
+- No external API calls
+- No user accounts or passwords (only PIN)
+- No cookies beyond localStorage for user identity
+- All data stored in local JSON files and the filesystem
 
 ---
 
-<div align="center">
+## License
 
-**[⬆ Back to Top](#-project-chair)**
+MIT — use it, fork it, make it yours.
 
-Made with 🖤 for the local-first web
+---
 
-</div>
-'''
-
-# Save the README file
-with open('/mnt/kimi/output/README.md', 'w', encoding='utf-8') as f:
-    f.write(readme_content)
-
-print("✅ README.md created for Project CHAIR!")
-print("📁 File saved: /mnt/kimi/output/README.md")
-print("\n🎨 Features:")
-print("  • Cool Android 16-inspired design language")
-print("  • Emoji icons and badges")
-print("  • Clean structure with tables")
-print("  • Quick start guide")
-print("  • API reference")
-print("  • Security warnings")
-print("  • Roadmap with checkboxes")
-print("  • Centered headers and footer")
-print("\n🚀 Ready for GitHub!")
+*Built with 🪑 and zero cloud dependencies.*
