@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Local Tube</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600&family=Google+Sans+Display:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ─── Design Tokens ─── */
+:root{
+  --bg:#0a0a0c;
+  --surface:#111114;
+  --surface2:#18181d;
+  --surface3:#1f1f26;
+  --outline:#2a2a35;
+  --outline2:#353542;
+  --primary:#a8c7fa;
+  --primary-dim:rgba(168,199,250,.12);
+  --red:#ff4444;
+  --red-dim:rgba(255,68,68,.12);
+  --on-bg:#e8e8f0;
+  --on-dim:#7a7a8e;
+  --on-dimmer:#4a4a5a;
+  --r:20px;
+  --r-sm:12px;
+  --r-full:999px;
+  --nav-h:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--on-bg);min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--nav-h)+16px)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--outline2);border-radius:4px}
+
+/* ─── Top Bar ─── */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,10,12,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--outline);display:flex;align-items:center;gap:12px;padding:0 16px;height:56px}
+.logo{font-family:'Google Sans Display',sans-serif;font-size:18px;font-weight:600;letter-spacing:-.3px;color:var(--on-bg);flex:1}
+.logo span{color:var(--red)}
+.topbar-btn{width:40px;height:40px;border-radius:50%;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--on-dim);transition:background .15s}
+.topbar-btn:hover{background:var(--surface3)}
+.topbar-btn svg{width:22px;height:22px;fill:currentColor}
+
+/* Search bar */
+.search-wrap{padding:12px 16px 0;display:none}
+.search-wrap.open{display:block}
+.search-bar{background:var(--surface2);border:1px solid var(--outline2);border-radius:var(--r-full);display:flex;align-items:center;gap:10px;padding:10px 16px;transition:border-color .2s}
+.search-bar:focus-within{border-color:var(--primary)}
+.search-bar input{background:none;border:none;outline:none;color:var(--on-bg);font-family:'Google Sans',sans-serif;font-size:15px;width:100%}
+.search-bar input::placeholder{color:var(--on-dim)}
+.search-bar svg{width:18px;height:18px;fill:var(--on-dim);flex-shrink:0}
+
+/* ─── Category Chips ─── */
+.chips-wrap{overflow-x:auto;display:flex;gap:8px;padding:14px 16px 0;scrollbar-width:none}
+.chips-wrap::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:7px 16px;border-radius:var(--r-full);border:1px solid var(--outline2);background:var(--surface2);color:var(--on-dim);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,color .15s,border-color .15s;white-space:nowrap}
+.chip.active{background:var(--on-bg);color:var(--bg);border-color:var(--on-bg)}
+.chip:hover:not(.active){background:var(--surface3);color:var(--on-bg)}
+
+/* ─── Main Layout ─── */
+main{padding:16px}
+
+/* ─── Video Cards (Home/Videos) ─── */
+.video-grid{display:flex;flex-direction:column;gap:0}
+.video-card{cursor:pointer;margin-bottom:20px;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r);overflow:hidden;background:var(--surface2)}
+.thumb-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.thumb-wrap:hover img{transform:scale(1.03)}
+.thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface3)}
+.thumb-placeholder svg{width:40px;height:40px;fill:var(--on-dimmer)}
+.duration-badge{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:500;padding:2px 7px;border-radius:6px}
+.admin-del-btn{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);border:none;cursor:pointer;display:none;align-items:center;justify-content:center}
+.admin-del-btn svg{width:16px;height:16px;fill:#ff4444}
+body.admin-mode .admin-del-btn{display:flex}
+.video-info{display:flex;gap:10px;padding:10px 0 0}
+.channel-avatar{width:36px;height:36px;border-radius:50%;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--on-dim)}
+.video-meta{flex:1;min-width:0}
+.video-title{font-size:14px;font-weight:500;line-height:1.4;color:var(--on-bg);margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.video-sub{font-size:12px;color:var(--on-dim)}
+.video-sub span::after{content:'·';margin:0 4px}
+.video-sub span:last-child::after{content:''}
+
+/* ─── Shorts Grid ─── */
+.shorts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.short-card{cursor:pointer;animation:fadeUp .4s ease both}
+.short-thumb{position:relative;aspect-ratio:9/16;border-radius:var(--r-sm);overflow:hidden;background:var(--surface2)}
+.short-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.short-thumb:hover img{transform:scale(1.04)}
+.short-title{font-size:13px;font-weight:500;margin-top:6px;color:var(--on-bg);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.short-ch{font-size:11px;color:var(--on-dim);margin-top:2px}
+.short-del{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.7);border:none;cursor:pointer;display:none;align-items:center;justify-content:center}
+.short-del svg{width:13px;height:13px;fill:#ff4444}
+body.admin-mode .short-del{display:flex}
+
+/* ─── Channels ─── */
+.channels-list{display:flex;flex-direction:column;gap:10px}
+.channel-row{background:var(--surface);border:1px solid var(--outline);border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;gap:14px;animation:fadeUp .3s ease both}
+.ch-avatar-lg{width:52px;height:52px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--on-dim);flex-shrink:0}
+.ch-info{flex:1;min-width:0}
+.ch-name{font-size:15px;font-weight:500}
+.ch-stats{font-size:12px;color:var(--on-dim);margin-top:2px}
+.follow-btn{padding:8px 18px;border-radius:var(--r-full);border:1px solid var(--outline2);background:var(--surface2);color:var(--on-dim);font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,color .15s,border-color .15s;white-space:nowrap}
+.follow-btn.following{background:var(--on-bg);color:var(--bg);border-color:var(--on-bg)}
+.follow-btn:hover:not(.following){background:var(--surface3);color:var(--on-bg)}
+
+/* ─── Video Player View ─── */
+.player-view{display:none;position:fixed;inset:0;background:var(--bg);z-index:80;overflow-y:auto}
+.player-view.open{display:block}
+.player-topbar{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-bottom:1px solid var(--outline);position:sticky;top:0;z-index:5}
+.back-btn{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--on-bg)}
+.back-btn svg{width:22px;height:22px;fill:currentColor}
+.player-video-wrap{width:100%;background:#000;aspect-ratio:16/9}
+.player-video-wrap.short-ratio{aspect-ratio:9/16;max-height:70vh}
+.player-video-wrap video{width:100%;height:100%;object-fit:contain}
+.player-info{padding:14px 16px}
+.player-title{font-size:18px;font-weight:500;line-height:1.3;margin-bottom:8px}
+.player-meta{font-size:13px;color:var(--on-dim);margin-bottom:14px}
+.player-actions{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.action-chip{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r-full);background:var(--surface2);border:1px solid var(--outline);cursor:pointer;font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;color:var(--on-dim);transition:background .15s,color .15s,border-color .15s}
+.action-chip svg{width:18px;height:18px;fill:currentColor}
+.action-chip.liked{background:var(--primary-dim);color:var(--primary);border-color:rgba(168,199,250,.25)}
+.action-chip.liked svg{fill:var(--primary)}
+.divider{height:1px;background:var(--outline);margin:0 0 14px}
+.channel-strip{display:flex;align-items:center;gap:12px;padding:12px 0}
+.desc-box{background:var(--surface2);border-radius:var(--r-sm);padding:14px;font-size:14px;color:var(--on-dim);line-height:1.6}
+
+/* ─── Bottom Nav ─── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(10,10,12,.92);backdrop-filter:blur(20px);border-top:1px solid var(--outline);display:flex;align-items:center;justify-content:space-around;z-index:60;padding:0 8px}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 0;border-radius:var(--r-sm);background:none;border:none;color:var(--on-dimmer);transition:color .15s}
+.nav-item.active{color:var(--on-bg)}
+.nav-item svg{width:24px;height:24px;fill:currentColor;transition:transform .2s}
+.nav-item.active svg{transform:scale(1.1)}
+.nav-label{font-size:10px;font-weight:500;letter-spacing:.3px}
+.nav-indicator{width:4px;height:4px;border-radius:50%;background:var(--primary);opacity:0;transition:opacity .2s}
+.nav-item.active .nav-indicator{opacity:1}
+
+/* ─── Admin Modal ─── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{background:var(--surface);border:1px solid var(--outline);border-radius:28px 28px 0 0;width:100%;max-width:520px;transform:translateY(60px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-height:92vh;overflow-y:auto}
+.overlay.open .sheet{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--outline2);border-radius:4px;margin:10px auto 0}
+.sheet-head{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.sheet-title{font-size:17px;font-weight:500}
+.sheet-close{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--on-dim)}
+.sheet-close svg{width:18px;height:18px;fill:currentColor}
+.sheet-body{padding:20px}
+
+/* Pin */
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:24px}
+.pdot{width:13px;height:13px;border-radius:50%;border:2px solid var(--outline2);background:transparent;transition:.15s}
+.pdot.fill{background:var(--primary);border-color:var(--primary)}
+.pdot.err{background:var(--red);border-color:var(--red);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.nk{background:var(--surface2);border:1px solid var(--outline);border-radius:14px;padding:17px;font-size:22px;font-weight:400;color:var(--on-bg);cursor:pointer;font-family:'Google Sans',sans-serif;transition:background .1s,transform .1s;text-align:center}
+.nk:active{background:var(--primary-dim);transform:scale(.94)}
+.nk.del{font-size:13px;color:var(--on-dim)}
+.nk.empty{visibility:hidden}
+
+/* Upload form */
+.form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-field label{font-size:12px;color:var(--on-dim);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.form-field input,.form-field textarea,.form-field select{background:var(--surface2);border:1px solid var(--outline2);border-radius:var(--r-sm);padding:12px 14px;color:var(--on-bg);font-family:'Google Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%}
+.form-field input:focus,.form-field textarea:focus,.form-field select:focus{border-color:var(--primary)}
+.form-field select{appearance:none}
+.form-field textarea{resize:vertical;min-height:72px}
+.file-drop{border:2px dashed var(--outline2);border-radius:var(--r-sm);padding:24px;text-align:center;cursor:pointer;transition:border-color .2s;position:relative}
+.file-drop:hover{border-color:var(--primary)}
+.file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-drop-icon{font-size:28px;margin-bottom:6px}
+.file-drop-label{font-size:13px;color:var(--on-dim)}
+.file-drop-label strong{color:var(--primary)}
+.file-chosen{font-size:12px;color:var(--primary);margin-top:4px}
+.submit-btn{width:100%;background:var(--primary);color:#0a0a0c;border:none;border-radius:var(--r-sm);padding:15px;font-family:'Google Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:6px}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed}
+.progress-bar-wrap{height:4px;background:var(--outline);border-radius:4px;margin-bottom:14px;display:none}
+.progress-bar{height:100%;background:var(--primary);border-radius:4px;width:0;transition:width .3s}
+
+/* Admin badge */
+.admin-badge{display:none;background:var(--red-dim);color:var(--red);font-size:11px;font-weight:500;padding:3px 10px;border-radius:var(--r-full);border:1px solid rgba(255,68,68,.2)}
+body.admin-mode .admin-badge{display:inline-flex}
+
+/* Empty state */
+.empty-state{padding:60px 0;text-align:center;color:var(--on-dimmer)}
+.empty-state svg{width:56px;height:56px;fill:var(--on-dimmer);margin-bottom:12px}
+.empty-state p{font-size:15px}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(var(--nav-h)+12px);left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--outline2);border-radius:var(--r-full);padding:11px 20px;font-size:13px;color:var(--on-bg);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Responsive */
+@media(min-width:640px){
+  .shorts-grid{grid-template-columns:repeat(3,1fr)}
+  .video-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .video-card{margin-bottom:0}
+}
+@media(min-width:960px){
+  .video-grid{grid-template-columns:repeat(3,1fr)}
+  .shorts-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <span class="logo">Local<span>Tube</span></span>
+  <span class="admin-badge" id="admin-badge">ADMIN</span>
+  <button class="topbar-btn" onclick="toggleSearch()" title="Search">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+  </button>
+  <button class="topbar-btn" id="admin-upload-btn" style="display:none" onclick="openSheet('upload-sheet')" title="Upload">
+    <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+  </button>
+  <button class="topbar-btn" id="admin-toggle" onclick="openSheet('login-sheet')" title="Admin">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+  </button>
+</div>
+
+<!-- Search -->
+<div class="search-wrap" id="search-wrap">
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" placeholder="Search videos..." id="search-input" oninput="handleSearch()"/>
+  </div>
+</div>
+
+<!-- Chips -->
+<div class="chips-wrap" id="chips-wrap">
+  <div class="chip active" onclick="setTab('home',this)">Home</div>
+  <div class="chip" onclick="setTab('shorts',this)">Shorts</div>
+  <div class="chip" onclick="setTab('channels',this)">Channels</div>
+</div>
+
+<!-- Main -->
+<main id="main-content">
+  <div id="view-home">
+    <div class="video-grid" id="video-grid"></div>
+  </div>
+  <div id="view-shorts" style="display:none">
+    <div class="shorts-grid" id="shorts-grid"></div>
+  </div>
+  <div id="view-channels" style="display:none">
+    <div class="channels-list" id="channels-list"></div>
+  </div>
+</main>
+
+<!-- Player View -->
+<div class="player-view" id="player-view">
+  <div class="player-topbar">
+    <button class="back-btn" onclick="closePlayer()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </button>
+    <span style="font-size:15px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="player-topbar-title"></span>
+  </div>
+  <div id="player-video-wrap" class="player-video-wrap">
+    <video id="player-vid" controls preload="metadata"></video>
+  </div>
+  <div class="player-info">
+    <h2 class="player-title" id="player-title"></h2>
+    <p class="player-meta" id="player-meta"></p>
+    <div class="player-actions">
+      <button class="action-chip" id="like-btn" onclick="toggleLike()">
+        <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+        <span id="like-count">0</span>
+      </button>
+      <button class="action-chip" id="follow-btn-player" onclick="toggleFollowPlayer()">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span id="follow-label-player">Follow</span>
+      </button>
+    </div>
+    <div class="divider"></div>
+    <div class="channel-strip">
+      <div class="channel-avatar" id="player-ch-avatar" style="width:44px;height:44px;font-size:18px"></div>
+      <div>
+        <div style="font-size:14px;font-weight:500" id="player-ch-name"></div>
+        <div style="font-size:12px;color:var(--on-dim)" id="player-ch-followers"></div>
+      </div>
+    </div>
+    <div class="desc-box" id="player-desc" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="setTab('home'); navActivate('nav-home')">
+    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <span class="nav-label">Home</span>
+    <span class="nav-indicator"></span>
+  </button>
+  <button class="nav-item" id="nav-shorts" onclick="setTab('shorts'); navActivate('nav-shorts')">
+    <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM15 16H5V8h10v8z"/></svg>
+    <span class="nav-label">Shorts</span>
+    <span class="nav-indicator"></span>
+  </button>
+  <button class="nav-item" id="nav-channels" onclick="setTab('channels'); navActivate('nav-channels')">
+    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <span class="nav-label">Channels</span>
+    <span class="nav-indicator"></span>
+  </button>
+</nav>
+
+<!-- Login Sheet -->
+<div class="overlay" id="login-sheet-overlay" onclick="handleOvClick(event,'login-sheet-overlay')">
+  <div class="sheet" id="login-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <span class="sheet-title" id="login-title">Admin Login</span>
+      <button class="sheet-close" onclick="closeSheet('login-sheet')"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="pin-dots" id="pin-dots">
+        <div class="pdot" id="pd0"></div><div class="pdot" id="pd1"></div>
+        <div class="pdot" id="pd2"></div><div class="pdot" id="pd3"></div>
+      </div>
+      <div class="numpad">
+        <button class="nk" onclick="pin('1')">1</button><button class="nk" onclick="pin('2')">2</button><button class="nk" onclick="pin('3')">3</button>
+        <button class="nk" onclick="pin('4')">4</button><button class="nk" onclick="pin('5')">5</button><button class="nk" onclick="pin('6')">6</button>
+        <button class="nk" onclick="pin('7')">7</button><button class="nk" onclick="pin('8')">8</button><button class="nk" onclick="pin('9')">9</button>
+        <button class="nk empty"></button><button class="nk" onclick="pin('0')">0</button><button class="nk del" onclick="pinDel()">⌫</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Sheet -->
+<div class="overlay" id="upload-sheet-overlay" onclick="handleOvClick(event,'upload-sheet-overlay')">
+  <div class="sheet" id="upload-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <span class="sheet-title">Upload</span>
+      <button class="sheet-close" onclick="closeSheet('upload-sheet')"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="progress-bar-wrap" id="pb-wrap"><div class="progress-bar" id="pb"></div></div>
+      <div class="form-field">
+        <label>Title</label>
+        <input type="text" id="up-title" placeholder="Video title"/>
+      </div>
+      <div class="form-field">
+        <label>Channel</label>
+        <input type="text" id="up-channel" placeholder="Channel name"/>
+      </div>
+      <div class="form-field">
+        <label>Type</label>
+        <select id="up-type">
+          <option value="video">Video</option>
+          <option value="short">Short</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Description</label>
+        <textarea id="up-desc" placeholder="Optional description"></textarea>
+      </div>
+      <div class="form-field">
+        <label>Video File</label>
+        <div class="file-drop">
+          <div class="file-drop-icon">🎬</div>
+          <div class="file-drop-label"><strong>Tap to select</strong> video file</div>
+          <div class="file-chosen" id="vid-chosen"></div>
+          <input type="file" id="up-vid" accept="video/*" onchange="fileChosen(this,'vid-chosen')"/>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Thumbnail <span style="color:var(--on-dimmer)">(optional)</span></label>
+        <div class="file-drop">
+          <div class="file-drop-icon">🖼️</div>
+          <div class="file-drop-label"><strong>Tap to select</strong> image</div>
+          <div class="file-chosen" id="thumb-chosen"></div>
+          <input type="file" id="up-thumb" accept="image/*" onchange="fileChosen(this,'thumb-chosen')"/>
+        </div>
+      </div>
+      <button class="submit-btn" id="upload-btn" onclick="uploadVideo()">Upload</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────
+const UID = (() => {
+  let u = localStorage.getItem('lt_uid');
+  if (!u) { u = 'u_' + Math.random().toString(36).slice(2,10); localStorage.setItem('lt_uid', u); }
+  return u;
+})();
+
+let isAdmin = false;
+let allVideos = [];
+let allChannels = [];
+let currentVideo = null;
+let currentTab = 'home';
+let pinVal = '';
+
+// ─── Init ─────────────────────────────────────────────────────────
+async function init() {
+  await loadData();
+  renderHome();
+  renderShorts();
+  renderChannels();
+}
+
+async function loadData() {
+  try {
+    const [vr, cr] = await Promise.all([
+      fetch(`/api/videos?uid=${UID}`).then(r=>r.json()),
+      fetch(`/api/channels?uid=${UID}`).then(r=>r.json())
+    ]);
+    allVideos   = vr;
+    allChannels = cr;
+  } catch(e) { toast('Server not reachable'); }
+}
+
+// ─── Render ───────────────────────────────────────────────────────
+function renderHome(videos) {
+  const list = (videos||allVideos).filter(v=>v.type==='video');
+  const grid = document.getElementById('video-grid');
+  if (!list.length) { grid.innerHTML = emptyState('No videos yet'); return; }
+  grid.innerHTML = list.map((v,i) => `
+    <div class="video-card" style="animation-delay:${i*.05}s" onclick="openPlayer('${v.id}')">
+      <div class="thumb-wrap">
+        ${v.thumb ? `<img src="${v.thumb}" alt="${v.title}" loading="lazy"/>` : thumbPlaceholder()}
+        <button class="admin-del-btn" onclick="event.stopPropagation();deleteVideo('${v.id}')">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </div>
+      <div class="video-info">
+        <div class="channel-avatar">${v.channel[0].toUpperCase()}</div>
+        <div class="video-meta">
+          <div class="video-title">${v.title}</div>
+          <div class="video-sub">
+            <span>${v.channel}</span>
+            <span>${fmtViews(v.views)} views</span>
+            <span>${timeAgo(v.uploaded)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderShorts(videos) {
+  const list = (videos||allVideos).filter(v=>v.type==='short');
+  const grid = document.getElementById('shorts-grid');
+  if (!list.length) { grid.innerHTML = emptyState('No shorts yet'); return; }
+  grid.innerHTML = list.map((v,i) => `
+    <div class="short-card" style="animation-delay:${i*.05}s" onclick="openPlayer('${v.id}')">
+      <div class="short-thumb">
+        ${v.thumb ? `<img src="${v.thumb}" alt="${v.title}" loading="lazy"/>` : thumbPlaceholder()}
+        <button class="short-del" onclick="event.stopPropagation();deleteVideo('${v.id}')">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </div>
+      <div class="short-title">${v.title}</div>
+      <div class="short-ch">${v.channel}</div>
+    </div>`).join('');
+}
+
+function renderChannels() {
+  const list = allChannels;
+  const el = document.getElementById('channels-list');
+  if (!list.length) { el.innerHTML = emptyState('No channels yet'); return; }
+  el.innerHTML = list.map((c,i) => `
+    <div class="channel-row" style="animation-delay:${i*.05}s">
+      <div class="ch-avatar-lg">${c.name[0].toUpperCase()}</div>
+      <div class="ch-info">
+        <div class="ch-name">${c.name}</div>
+        <div class="ch-stats">${c.videos} video${c.videos!==1?'s':''} · ${c.follows} follower${c.follows!==1?'s':''}</div>
+      </div>
+      <button class="follow-btn ${c.following?'following':''}" id="fch-${c.name}" onclick="toggleFollow('${c.name}',this)">
+        ${c.following?'Following':'Follow'}
+      </button>
+    </div>`).join('');
+}
+
+// ─── Player ───────────────────────────────────────────────────────
+async function openPlayer(id) {
+  const v = allVideos.find(x=>x.id===id);
+  if (!v) return;
+  currentVideo = v;
+
+  fetch(`/api/view/${id}`, {method:'POST'});
+
+  document.getElementById('player-topbar-title').textContent = v.title;
+  document.getElementById('player-title').textContent        = v.title;
+  document.getElementById('player-meta').textContent         = `${v.channel} · ${fmtViews(v.views)} views · ${timeAgo(v.uploaded)}`;
+  document.getElementById('player-vid').src                  = v.src;
+  document.getElementById('player-ch-avatar').textContent    = v.channel[0].toUpperCase();
+  document.getElementById('player-ch-name').textContent      = v.channel;
+
+  // Like state
+  const lb = document.getElementById('like-btn');
+  lb.className = 'action-chip' + (v.liked?' liked':'');
+  document.getElementById('like-count').textContent = v.likes||0;
+
+  // Follow state
+  const ch = allChannels.find(c=>c.name===v.channel);
+  const fp = document.getElementById('follow-btn-player');
+  const fl = document.getElementById('follow-label-player');
+  const fc = document.getElementById('player-ch-followers');
+  if (ch) {
+    fp.className = 'action-chip' + (ch.following?' liked':'');
+    fl.textContent = ch.following ? 'Following' : 'Follow';
+    fc.textContent = `${ch.follows} follower${ch.follows!==1?'s':''}`;
+  }
+
+  // Desc
+  const db = document.getElementById('player-desc');
+  if (v.desc) { db.textContent = v.desc; db.style.display='block'; }
+  else db.style.display='none';
+
+  // Aspect
+  const wrap = document.getElementById('player-video-wrap');
+  wrap.className = 'player-video-wrap' + (v.type==='short'?' short-ratio':'');
+
+  document.getElementById('player-view').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  const vid = document.getElementById('player-vid');
+  vid.pause(); vid.src='';
+  document.getElementById('player-view').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+async function toggleLike() {
+  if (!currentVideo) return;
+  const res = await fetch(`/api/like/${currentVideo.id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uid:UID})}).then(r=>r.json());
+  const lb = document.getElementById('like-btn');
+  lb.className = 'action-chip' + (res.liked?' liked':'');
+  document.getElementById('like-count').textContent = res.likes;
+  currentVideo.liked = res.liked; currentVideo.likes = res.likes;
+  const v = allVideos.find(x=>x.id===currentVideo.id);
+  if(v){ v.liked=res.liked; v.likes=res.likes; }
+}
+
+async function toggleFollowPlayer() {
+  if (!currentVideo) return;
+  const ch = currentVideo.channel;
+  const res = await fetch(`/api/follow/${encodeURIComponent(ch)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uid:UID})}).then(r=>r.json());
+  const fp = document.getElementById('follow-btn-player');
+  const fl = document.getElementById('follow-label-player');
+  fp.className = 'action-chip' + (res.following?' liked':'');
+  fl.textContent = res.following ? 'Following' : 'Follow';
+  document.getElementById('player-ch-followers').textContent = `${res.follows} follower${res.follows!==1?'s':''}`;
+  const c = allChannels.find(x=>x.name===ch);
+  if(c){ c.following=res.following; c.follows=res.follows; }
+}
+
+async function toggleFollow(channel, btn) {
+  const res = await fetch(`/api/follow/${encodeURIComponent(channel)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uid:UID})}).then(r=>r.json());
+  btn.className = 'follow-btn' + (res.following?' following':'');
+  btn.textContent = res.following ? 'Following' : 'Follow';
+  const c = allChannels.find(x=>x.name===channel);
+  if(c){ c.following=res.following; c.follows=res.follows; }
+}
+
+// ─── Admin ────────────────────────────────────────────────────────
+const PASS = '1258';
+let pinVal2 = '';
+
+function pin(n) {
+  if (pinVal.length>=4) return;
+  pinVal += n; refreshPinDots();
+  if (pinVal.length===4) setTimeout(checkPin,100);
+}
+function pinDel() { pinVal=pinVal.slice(0,-1); refreshPinDots(); }
+function refreshPinDots(state) {
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('pd'+i);
+    d.className='pdot'+(i<pinVal.length?' fill':'')+(state==='err'?' err':'');
+  }
+}
+function checkPin() {
+  if (pinVal===PASS) {
+    isAdmin=true; document.body.classList.add('admin-mode');
+    document.getElementById('admin-badge').style.display='inline-flex';
+    document.getElementById('admin-upload-btn').style.display='flex';
+    document.getElementById('admin-toggle').style.display='none';
+    closeSheet('login-sheet'); pinVal=''; refreshPinDots();
+    toast('Admin mode on');
+  } else {
+    refreshPinDots('err');
+    setTimeout(()=>{ pinVal=''; refreshPinDots(); },600);
+  }
+}
+
+function fileChosen(inp, labelId) {
+  const n = inp.files[0]?.name;
+  document.getElementById(labelId).textContent = n||'';
+}
+
+async function uploadVideo() {
+  const title   = document.getElementById('up-title').value.trim();
+  const channel = document.getElementById('up-channel').value.trim();
+  const type    = document.getElementById('up-type').value;
+  const desc    = document.getElementById('up-desc').value.trim();
+  const vidFile = document.getElementById('up-vid').files[0];
+  const thumbFile = document.getElementById('up-thumb').files[0];
+
+  if (!title||!channel||!vidFile) { toast('Fill title, channel & video'); return; }
+
+  const fd = new FormData();
+  fd.append('pass', PASS);
+  fd.append('title', title); fd.append('channel', channel);
+  fd.append('type', type); fd.append('desc', desc);
+  fd.append('video', vidFile);
+  if (thumbFile) fd.append('thumbnail', thumbFile);
+
+  const btn = document.getElementById('upload-btn');
+  const pbWrap = document.getElementById('pb-wrap');
+  const pb = document.getElementById('pb');
+  btn.disabled=true; btn.textContent='Uploading...';
+  pbWrap.style.display='block';
+
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST','/api/upload');
+    xhr.upload.onprogress = e => { if(e.lengthComputable) pb.style.width=(e.loaded/e.total*100)+'%'; };
+    await new Promise((res,rej)=>{ xhr.onload=res; xhr.onerror=rej; xhr.send(fd); });
+    if (xhr.status===200) {
+      toast('Uploaded!');
+      closeSheet('upload-sheet');
+      await loadData(); renderHome(); renderShorts(); renderChannels();
+      document.getElementById('up-title').value='';
+      document.getElementById('up-channel').value='';
+      document.getElementById('up-desc').value='';
+      document.getElementById('up-vid').value='';
+      document.getElementById('up-thumb').value='';
+      document.getElementById('vid-chosen').textContent='';
+      document.getElementById('thumb-chosen').textContent='';
+    } else toast('Upload failed');
+  } catch { toast('Upload error'); }
+  finally { btn.disabled=false; btn.textContent='Upload'; pbWrap.style.display='none'; pb.style.width='0'; }
+}
+
+async function deleteVideo(id) {
+  if (!confirm('Delete this video?')) return;
+  const res = await fetch(`/api/delete/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pass:PASS})});
+  if (res.ok) {
+    allVideos = allVideos.filter(v=>v.id!==id);
+    renderHome(); renderShorts(); renderChannels();
+    toast('Deleted');
+  }
+}
+
+// ─── Navigation ───────────────────────────────────────────────────
+function setTab(tab, chip) {
+  currentTab = tab;
+  document.getElementById('view-home').style.display     = tab==='home'?'':'none';
+  document.getElementById('view-shorts').style.display   = tab==='shorts'?'':'none';
+  document.getElementById('view-channels').style.display = tab==='channels'?'':'none';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  if(chip) chip.classList.add('active');
+}
+
+function navActivate(id) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const chip = document.querySelector(`.chip:nth-child(${id==='nav-home'?1:id==='nav-shorts'?2:3})`);
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  if (chip) chip.classList.add('active');
+}
+
+// ─── Search ───────────────────────────────────────────────────────
+let searchOpen = false;
+function toggleSearch() {
+  searchOpen = !searchOpen;
+  const sw = document.getElementById('search-wrap');
+  sw.classList.toggle('open', searchOpen);
+  if (searchOpen) document.getElementById('search-input').focus();
+  else { document.getElementById('search-input').value=''; handleSearch(); }
+}
+
+function handleSearch() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!q) { renderHome(); renderShorts(); return; }
+  renderHome(allVideos.filter(v=>v.type==='video'&&(v.title.toLowerCase().includes(q)||v.channel.toLowerCase().includes(q))));
+  renderShorts(allVideos.filter(v=>v.type==='short'&&(v.title.toLowerCase().includes(q)||v.channel.toLowerCase().includes(q))));
+}
+
+// ─── Sheets ───────────────────────────────────────────────────────
+function openSheet(id) {
+  document.getElementById(id+'-overlay').classList.add('open');
+}
+function closeSheet(id) {
+  document.getElementById(id+'-overlay').classList.remove('open');
+  if(id==='login-sheet'){ pinVal=''; refreshPinDots(); }
+}
+function handleOvClick(e,id) {
+  if(e.target===e.currentTarget) closeSheet(id.replace('-overlay',''));
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────
+function emptyState(msg) {
+  return `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><p>${msg}</p></div>`;
+}
+function thumbPlaceholder() {
+  return `<div class="thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M21 3H3v18h18V3zm-9 13l-5-3 5-3v6z"/></svg></div>`;
+}
+function fmtViews(n) { return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n||0; }
+function timeAgo(ts) {
+  const d=Math.floor((Date.now()/1000-ts)/86400);
+  return d===0?'Today':d===1?'Yesterday':d<7?`${d} days ago`:d<30?`${Math.floor(d/7)}w ago`:`${Math.floor(d/30)}mo ago`;
+}
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+init();
+</script>
+</body>
+</html>
